@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin Bengkel Motor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4f1; --card:#ffffff; --ink:#1b1e1b; --muted:#6b7280;
+  --line:#e5e7eb; --accent:#ea580c; --accent-dark:#c2410c; --accent-soft:#fff1e6;
+  --green:#15803d; --green-soft:#e7f6ec; --amber:#b45309; --amber-soft:#fdf3e0;
+  --blue:#1d4ed8; --blue-soft:#e9eefc; --red:#b91c1c; --red-soft:#fdeaea;
+  --gray-soft:#eef0ee; --radius:16px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.5}
+h1,h2,h3{line-height:1.25}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:16px}
+a{color:var(--accent-dark)}
+
+/* ===== Header ===== */
+header.app{position:sticky;top:0;z-index:20;background:#111827;color:#fff;padding:16px 16px 14px}
+header.app .wrap{max-width:640px;margin:0 auto}
+header.app h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
+header.app h1 span{color:#fb923c}
+header.app p{margin:3px 0 0;color:#d1d5db;font-size:13px}
+
+/* ===== Layout ===== */
+main{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+.view{display:none}
+.view.active{display:block}
+.section-title{font-size:18px;font-weight:800;margin:20px 0 10px}
+.section-title:first-child{margin-top:0}
+.hint{color:var(--muted);font-size:14px;margin:4px 0 12px}
+
+/* ===== Statistik beranda ===== */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 10px;text-align:center}
+.stat .num{font-size:30px;font-weight:800;line-height:1.1}
+.stat .lbl{font-size:12px;color:var(--muted);margin-top:4px;font-weight:600}
+.stat.orange .num{color:var(--accent)}
+.stat.blue .num{color:var(--blue)}
+.stat.red .num{color:var(--red)}
+
+/* ===== Pencarian ===== */
+.search{display:flex;gap:8px;margin:14px 0}
+.search input{flex:1;min-width:0;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;outline:none}
+.search input:focus{border-color:var(--accent)}
+
+/* ===== Tombol ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  min-height:50px;padding:12px 18px;border:0;border-radius:12px;
+  background:var(--accent);color:#fff;font-weight:700;font-size:16px;text-decoration:none}
+.btn:active{background:var(--accent-dark)}
+.btn.block{width:100%}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.green{background:var(--green)}
+.btn.gray{background:var(--gray-soft);color:var(--ink)}
+.btn.danger{background:#fff;color:var(--red);border:1.5px solid #fecaca}
+.btn.small{min-height:42px;padding:8px 12px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn-row .btn{flex:1;min-width:120px}
+
+/* ===== Kartu ===== */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card .plat{font-size:19px;font-weight:800;letter-spacing:.02em}
+.card .sub{color:var(--muted);font-size:14px;margin-top:2px}
+.card .rowline{margin-top:8px;font-size:15px}
+.card .rowline b{font-weight:700}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px dashed var(--line);font-size:15px}
+.kv:first-of-type{border-top:0}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:700;text-align:right}
+.kv.total{font-size:17px}
+.kv.total .v{color:var(--accent-dark)}
+.empty{background:#fff;border:1.5px dashed var(--line);border-radius:var(--radius);
+  padding:26px 18px;text-align:center;color:var(--muted);font-size:15px}
+
+/* ===== Label status / lunas ===== */
+.pill{display:inline-block;padding:4px 11px;border-radius:999px;font-size:13px;font-weight:700}
+.st-wait{background:var(--amber-soft);color:var(--amber)}
+.st-work{background:var(--blue-soft);color:var(--blue)}
+.st-done{background:var(--green-soft);color:var(--green)}
+.st-pick{background:var(--gray-soft);color:#4b5563}
+.paid{background:var(--green-soft);color:var(--green)}
+.unpaid{background:var(--red-soft);color:var(--red)}
+.tagline{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+
+/* ===== Daftar pelanggan ===== */
+.cust-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cust-head .name{font-size:18px;font-weight:800}
+.cust-head .hp{color:var(--muted);font-size:14px;margin-top:2px}
+.vehicle{border-top:1px dashed var(--line);margin-top:12px;padding-top:12px}
+.vehicle .vplat{font-weight:800;font-size:16px}
+.vehicle .vinfo{color:var(--muted);font-size:14px}
+.vehicle .vbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+/* ===== Riwayat ===== */
+.month-row{display:flex;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;padding:13px 15px;margin-bottom:8px;font-size:15px}
+.month-row b{font-weight:800}
+.big-total{font-size:22px;font-weight:800;color:var(--accent-dark)}
+
+/* ===== Navigasi bawah ===== */
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:20;background:#fff;
+  border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav.bottom button{flex:1;background:none;border:0;padding:9px 4px 11px;font-size:13px;font-weight:600;color:var(--muted)}
+nav.bottom button .ico{display:block;font-size:22px;line-height:1.2}
+nav.bottom button.active{color:var(--accent);font-weight:800}
+
+/* ===== Modal / lembar bawah ===== */
+.overlay{position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.5);
+  display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:640px;max-height:88vh;overflow-y:auto;
+  border-radius:22px 22px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 4px;font-size:20px}
+.sheet .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+.sheet label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+.sheet input[type=text],.sheet input[type=tel],.sheet input[type=number],
+.sheet input[type=date],.sheet select,.sheet textarea{
+  width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff;outline:none}
+.sheet input:focus,.sheet select:focus,.sheet textarea:focus{border-color:var(--accent)}
+.sheet textarea{min-height:74px;resize:vertical}
+.total-box{background:var(--accent-soft);border-radius:12px;padding:14px 16px;margin-top:16px;
+  display:flex;justify-content:space-between;align-items:center;font-size:17px}
+.total-box b{font-size:21px;color:var(--accent-dark)}
+.checkline{display:flex;align-items:center;gap:10px;margin-top:16px;font-weight:700}
+.checkline input{width:22px;height:22px;accent-color:var(--green)}
+.sheet .actions{display:flex;gap:10px;margin-top:20px}
+.sheet .actions .btn{flex:1}
+
+/* ===== Nota ===== */
+.nota{border:1.5px solid var(--ink);border-radius:14px;padding:18px;margin-top:6px;position:relative;background:#fff}
+.nota h3{margin:0;text-align:center;font-size:18px}
+.nota .nsub{text-align:center;color:var(--muted);font-size:13px;margin:2px 0 12px}
+.nota .stamp{position:absolute;top:14px;right:14px;border:2.5px solid var(--green);color:var(--green);
+  font-weight:800;padding:4px 10px;border-radius:8px;transform:rotate(-8deg);font-size:14px;letter-spacing:.08em}
+.nota .stamp.unpaid{border-color:var(--red);color:var(--red)}
+.nota pre{white-space:pre-wrap;font-family:inherit;font-size:15px;margin:0}
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="wrap">
+    <h1>🔧 Admin <span>Bengkel Motor</span></h1>
+    <p id="todayLine">—</p>
+  </div>
+</header>
+
+<main>
+  <!-- ============ BERANDA ============ -->
+  <section id="view-home" class="view active">
+    <h2 class="section-title">Pekerjaan Hari Ini</h2>
+    <div class="stats">
+      <div class="stat orange"><div class="num" id="countWait">0</div><div class="lbl">Menunggu</div></div>
+      <div class="stat blue"><div class="num" id="countWork">0</div><div class="lbl">Dikerjakan</div></div>
+      <div class="stat red"><div class="num" id="countUnpaid">0</div><div class="lbl">Belum Lunas</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn block" data-action="add-job">＋ Servis Baru</button>
+    </div>
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="Cari plat nomor, nama, atau no. HP…" autocomplete="off">
+    </div>
+    <div id="homeList"></div>
+  </section>
+
+  <!-- ============ PELANGGAN ============ -->
+  <section id="view-customers" class="view">
+    <h2 class="section-title">Pelanggan &amp; Kendaraan</h2>
+    <p class="hint">Satu pelanggan bisa punya lebih dari satu motor. Plat nomor dipakai sebagai kunci pencarian.</p>
+    <div class="btn-row" style="margin-top:0">
+      <button class="btn block" data-action="add-customer">＋ Pelanggan Baru</button>
+    </div>
+    <div id="customerList" style="margin-top:14px"></div>
+  </section>
+
+  <!-- ============ RIWAYAT ============ -->
+  <section id="view-history" class="view">
+    <h2 class="section-title">Riwayat</h2>
+    <p class="tagline">Piutang — belum lunas</p>
+    <div id="debtBox"></div>
+    <p class="tagline" style="margin-top:22px">Uang masuk per bulan</p>
+    <div id="incomeBox"></div>
+    <p class="tagline" style="margin-top:22px">Semua servis</p>
+    <div id="historyList"></div>
+  </section>
+</main>
+
+<nav class="bottom">
+  <button data-action="nav" data-view="home" class="active"><span class="ico">🏠</span>Beranda</button>
+  <button data-action="nav" data-view="customers"><span class="ico">👥</span>Pelanggan</button>
+  <button data-action="nav" data-view="history"><span class="ico">🕘</span>Riwayat</button>
+</nav>
+
+<div id="modalRoot"></div>
+
+<script>
+'use strict';
+/* ================= DATA ================= */
+var LS_KEY = 'adminBengkelMotor.v1';
+function defaultDB(){ return { customers: [], jobs: [] }; }
+var db;
+try { db = JSON.parse(localStorage.getItem(LS_KEY)) || defaultDB(); }
+catch(e){ db = defaultDB(); }
+if(!Array.isArray(db.customers)) db.customers = [];
+if(!Array.isArray(db.jobs)) db.jobs = [];
+
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(db)); }catch(e){} }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayISO(){
+  var d = new Date();
+  var m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  return d.getFullYear() + '-' + m + '-' + day;
+}
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function fmtRp(n){
+  n = Number(n) || 0;
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+function fmtTgl(iso){
+  if(!iso) return '—';
+  var p = iso.split('-');
+  if(p.length !== 3) return iso;
+  var d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+  return d.toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'});
+}
+function monthLabel(ym){
+  var p = ym.split('-');
+  var d = new Date(Number(p[0]), Number(p[1])-1, 1);
+  return d.toLocaleDateString('id-ID', {month:'long', year:'numeric'});
+}
+function digitsOnly(s){ return String(s||'').replace(/\D/g,''); }
+function waNumber(hp){
+  var d = digitsOnly(hp);
+  if(!d) return '';
+  if(d.indexOf('62') === 0) return d;
+  if(d.charAt(0) === '0') return '62' + d.slice(1);
+  if(d.charAt(0) === '8') return '62' + d;
+  return d;
+}
+
+/* ================= PENCARIAN DATA ================= */
+function findCustomer(id){
+  for(var i=0;i<db.customers.length;i++) if(db.customers[i].id === id) return db.customers[i];
+  return null;
+}
+function findVehicle(vid){
+  for(var i=0;i<db.customers.length;i++){
+    var c = db.customers[i];
+    for(var j=0;j<c.vehicles.length;j++){
+      if(c.vehicles[j].id === vid) return { customer: c, vehicle: c.vehicles[j] };
+    }
+  }
+  return null;
+}
+function findJob(id){
+  for(var i=0;i<db.jobs.length;i++) if(db.jobs[i].id === id) return db.jobs[i];
+  return null;
+}
+function jobTotal(j){ return (Number(j.biayaSparepart)||0) + (Number(j.biayaJasa)||0); }
+
+var STATUS = ['Menunggu','Dikerjakan','Selesai','Diambil'];
+var STATUS_CLS = {'Menunggu':'st-wait','Dikerjakan':'st-work','Selesai':'st-done','Diambil':'st-pick'};
+function statusPill(s){ return '<span class="pill ' + (STATUS_CLS[s]||'st-pick') + '">' + esc(s) + '</span>'; }
+function paidPill(lunas){ return lunas ? '<span class="pill paid">Lunas</span>' : '<span class="pill unpaid">Belum Lunas</span>'; }
+
+/* ================= STATE TAMPILAN ================= */
+var view = 'home';
+var searchQ = '';
+
+/* ================= RENDER: BERANDA ================= */
+function jobMatchesSearch(j, q){
+  if(!q) return true;
+  q = q.toLowerCase().replace(/\s+/g,'');
+  var found = findVehicle(j.vehicleId);
+  var hay = [j.keluhan, j.pekerjaan, j.sparepart];
+  if(found){
+    hay.push(found.vehicle.plat, found.vehicle.merk, found.customer.nama, found.customer.hp);
+  }
+  var text = hay.join(' ').toLowerCase().replace(/\s+/g,'');
+  return text.indexOf(q) !== -1;
+}
+
+function jobCardHTML(j){
+  var found = findVehicle(j.vehicleId);
+  var plat = found ? found.vehicle.plat : '(kendaraan dihapus)';
+  var merk = found ? found.vehicle.merk + (found.vehicle.tahun ? ' • ' + found.vehicle.tahun : '') : '';
+  var nama = found ? found.customer.nama : '—';
+  var hp = found ? found.customer.hp : '';
+  var nextIdx = STATUS.indexOf(j.status) + 1;
+  var nextLabel = nextIdx < STATUS.length ? '➜ ' + STATUS[nextIdx] : '✓ Selesai diambil';
+  return '' +
+  '<div class="card">' +
+    '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">' +
+      '<div><div class="plat">' + esc(plat) + '</div>' +
+      '<div class="sub">' + esc(nama) + (hp ? ' • ' + esc(hp) : '') + '</div>' +
+      (merk ? '<div class="sub">' + esc(merk) + '</div>' : '') + '</div>' +
+      '<div style="text-align:right">' + statusPill(j.status) + '<div style="margin-top:6px">' + paidPill(j.lunas) + '</div></div>' +
+    '</div>' +
+    '<div class="rowline"><b>Keluhan:</b> ' + esc(j.keluhan || '—') + '</div>' +
+    (j.pekerjaan ? '<div class="rowline"><b>Pekerjaan:</b> ' + esc(j.pekerjaan) + '</div>' : '') +
+    '<div class="kv"><span class="k">Tanggal masuk</span><span class="v">' + esc(fmtTgl(j.tanggal)) + '</span></div>' +
+    (j.tanggalSelesai ? '<div class="kv"><span class="k">Tanggal selesai</span><span class="v">' + esc(fmtTgl(j.tanggalSelesai)) + '</span></div>' : '') +
+    '<div class="kv total"><span class="k">Total biaya</span><span class="v">' + esc(fmtRp(jobTotal(j))) + '</span></div>' +
+    '<div class="btn-row">' +
+      '<button class="btn small" data-action="status-next" data-id="' + j.id + '" ' + (j.status === 'Diambil' ? 'disabled' : '') + '>' + esc(nextLabel) + '</button>' +
+      '<button class="btn small ' + (j.lunas ? 'gray' : 'green') + '" data-action="toggle-lunas" data-id="' + j.id + '">' + (j.lunas ? 'Batalkan Lunas' : 'Tandai Lunas') + '</button>' +
+    '</div>' +
+    '<div class="btn-row">' +
+      '<button class="btn small ghost" data-action="nota" data-id="' + j.id + '">🧾 Nota</button>' +
+      '<button class="btn small ghost" data-action="edit-job" data-id="' + j.id + '">✏️ Ubah</button>' +
+      '<button class="btn small danger" data-action="del-job" data-id="' + j.id + '">🗑 Hapus</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderHome(){
+  var menunggu = db.jobs.filter(function(j){ return j.status === 'Menunggu'; }).length;
+  var dikerjakan = db.jobs.filter(function(j){ return j.status === 'Dikerjakan'; }).length;
+  var belumLunas = db.jobs.filter(function(j){ return !j.lunas; }).length;
+  document.getElementById('countWait').textContent = menunggu;
+  document.getElementById('countWork').textContent = dikerjakan;
+  document.getElementById('countUnpaid').textContent = belumLunas;
+
+  var today = todayISO();
+  var list = db.jobs.filter(function(j){
+    var aktif = j.status === 'Menunggu' || j.status === 'Dikerjakan';
+    var selesaiHariIni = j.tanggalSelesai === today;
+    return (aktif || selesaiHariIni) && jobMatchesSearch(j, searchQ);
+  }).sort(function(a,b){ return (b.tanggal + b.id) < (a.tanggal + a.id) ? -1 : 1; });
+
+  var box = document.getElementById('homeList');
+  if(!list.length){
+    box.innerHTML = '<div class="empty">Belum ada pekerjaan hari ini.<br>Ketuk tombol <b>＋ Servis Baru</b> untuk mencatat servis pertama.</div>';
+    return;
+  }
+  box.innerHTML = list.map(jobCardHTML).join('');
+}
+
+/* ================= RENDER: PELANGGAN ================= */
+function renderCustomers(){
+  var box = document.getElementById('customerList');
+  if(!db.customers.length){
+    box.innerHTML = '<div class="empty">Belum ada pelanggan.<br>Ketuk tombol <b>＋ Pelanggan Baru</b> untuk menambah pelanggan pertama.</div>';
+    return;
+  }
+  box.innerHTML = db.customers.map(function(c){
+    var vehs = c.vehicles.map(function(v){
+      return '' +
+      '<div class="vehicle">' +
+        '<div class="vplat">' + esc(v.plat) + '</div>' +
+        '<div class="vinfo">' + esc(v.merk) + (v.tahun ? ' • Tahun ' + esc(v.tahun) : '') + '</div>' +
+        '<div class="vbtns">' +
+          '<button class="btn small" data-action="add-job" data-vid="' + v.id + '">＋ Servis</button>' +
+          '<button class="btn small danger" data-action="del-vehicle" data-cid="' + c.id + '" data-vid="' + v.id + '">Hapus Motor</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    return '' +
+    '<div class="card">' +
+      '<div class="cust-head"><div><div class="name">' + esc(c.nama) + '</div>' +
+      '<div class="hp">📞 ' + (c.hp ? '<a href="tel:' + esc(digitsOnly(c.hp)) + '">' + esc(c.hp) + '</a>' : '—') + '</div></div>' +
+      '<div><button class="btn small ghost" data-action="edit-customer" data-id="' + c.id + '">✏️</button> ' +
+      '<button class="btn small danger" data-action="del-customer" data-id="' + c.id + '">🗑</button></div></div>' +
+      (vehs || '<div class="hint" style="margin-top:10px">Belum ada kendaraan.</div>') +
+      '<div class="btn-row"><button class="btn small ghost" data-action="add-vehicle" data-cid="' + c.id + '">＋ Tambah Motor</button></div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ================= RENDER: RIWAYAT ================= */
+function renderHistory(){
+  // Piutang: servis selesai/diambil tapi belum lunas
+  var debts = db.jobs.filter(function(j){ return !j.lunas && (j.status === 'Selesai' || j.status === 'Diambil'); });
+  var totalDebt = debts.reduce(function(s,j){ return s + jobTotal(j); }, 0);
+  var debtBox = document.getElementById('debtBox');
+  if(!debts.length){
+    debtBox.innerHTML = '<div class="empty">Tidak ada piutang. Semua servis yang selesai sudah lunas. 👍</div>';
+  } else {
+    debtBox.innerHTML =
+      '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<span><b>' + debts.length + ' servis belum lunas</b></span>' +
+      '<span class="big-total">' + esc(fmtRp(totalDebt)) + '</span></div></div>' +
+      debts.map(function(j){
+        var found = findVehicle(j.vehicleId);
+        var plat = found ? found.vehicle.plat : '(kendaraan dihapus)';
+        var nama = found ? found.customer.nama : '—';
+        return '<div class="card" style="padding:13px 16px">' +
+          '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center">' +
+          '<div><b>' + esc(plat) + '</b> — ' + esc(nama) + '<br><span class="sub">' + esc(fmtTgl(j.tanggal)) + ' • ' + esc(fmtRp(jobTotal(j))) + '</span></div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">' +
+          '<button class="btn small green" data-action="toggle-lunas" data-id="' + j.id + '">Tandai Lunas</button>' +
+          '<button class="btn small ghost" data-action="nota" data-id="' + j.id + '">🧾 Nota</button>' +
+          '</div></div></div>';
+      }).join('');
+  }
+
+  // Rekap uang masuk per bulan (dari servis yang sudah lunas)
+  var byMonth = {};
+  db.jobs.filter(function(j){ return j.lunas; }).forEach(function(j){
+    var ym = (j.paidAt || j.tanggalSelesai || j.tanggal || '').slice(0,7);
+    if(!ym) return;
+    if(!byMonth[ym]) byMonth[ym] = { total: 0, count: 0 };
+    byMonth[ym].total += jobTotal(j);
+    byMonth[ym].count += 1;
+  });
+  var months = Object.keys(byMonth).sort().reverse();
+  var incomeBox = document.getElementById('incomeBox');
+  if(!months.length){
+    incomeBox.innerHTML = '<div class="empty">Belum ada uang masuk. Tandai servis sebagai <b>Lunas</b> setelah pelanggan membayar.</div>';
+  } else {
+    incomeBox.innerHTML = months.map(function(ym){
+      return '<div class="month-row"><span><b>' + esc(monthLabel(ym)) + '</b><br><span class="sub">' + byMonth[ym].count + ' servis lunas</span></span>' +
+        '<b>' + esc(fmtRp(byMonth[ym].total)) + '</b></div>';
+    }).join('');
+  }
+
+  // Semua servis, terbaru dulu
+  var all = db.jobs.slice().sort(function(a,b){
+    var ka = (a.tanggal||'') + (a.id||''), kb = (b.tanggal||'') + (b.id||'');
+    return ka < kb ? 1 : -1;
+  });
+  var histBox = document.getElementById('historyList');
+  if(!all.length){
+    histBox.innerHTML = '<div class="empty">Belum ada riwayat servis.</div>';
+  } else {
+    histBox.innerHTML = all.map(jobCardHTML).join('');
+  }
+}
+
+function renderAll(){
+  renderHome();
+  renderCustomers();
+  renderHistory();
+}
+
+/* ================= MODAL ================= */
+var modalRoot = document.getElementById('modalRoot');
+function openModal(html){
+  modalRoot.innerHTML = '<div class="overlay" data-action="overlay-close"><div class="sheet" onclick="event.stopPropagation()">' + html + '</div></div>';
+}
+function closeModal(){ modalRoot.innerHTML = ''; }
+
+var confirmCb = null;
+function openConfirm(pesan, cb){
+  confirmCb = cb;
+  openModal(
+    '<h2>Hapus data?</h2><p class="sub">' + esc(pesan) + '</p>' +
+    '<div class="actions">' +
+      '<button class="btn gray" data-action="confirm-no">Batal</button>' +
+      '<button class="btn" style="background:var(--red)" data-action="confirm-yes">Ya, Hapus</button>' +
+    '</div>'
+  );
+}
+
+/* ================= FORM: PELANGGAN ================= */
+function openCustomerForm(existing){
+  var c = existing || { id: '', nama: '', hp: '' };
+  openModal(
+    '<h2>' + (existing ? 'Ubah Pelanggan' : 'Pelanggan Baru') + '</h2>' +
+    '<p class="sub">Isi nama dan nomor HP pelanggan.</p>' +
+    '<form id="customerForm">' +
+      '<input type="hidden" name="id" value="' + esc(c.id) + '">' +
+      '<label>Nama pelanggan *</label>' +
+      '<input type="text" name="nama" required placeholder="cth: Budi Santoso" value="' + esc(c.nama) + '">' +
+      '<label>Nomor HP / WhatsApp</label>' +
+      '<input type="tel" name="hp" placeholder="cth: 081234567890" value="' + esc(c.hp) + '">' +
+      '<div class="actions">' +
+        '<button type="button" class="btn gray" data-action="close-modal">Batal</button>' +
+        '<button type="submit" class="btn">Simpan</button>' +
+      '</div>' +
+    '</form>'
+  );
+  setTimeout(function(){ var i = document.querySelector('#customerForm input[name=nama]'); if(i) i.focus(); }, 50);
+}
+
+/* ================= FORM: KENDARAAN ================= */
+function openVehicleForm(customerId){
+  var c = findCustomer(customerId);
+  if(!c) return;
+  openModal(
+    '<h2>Tambah Motor</h2>' +
+    '<p class="sub">Untuk pelanggan: <b>' + esc(c.nama) + '</b></p>' +
+    '<form id="vehicleForm">' +
+      '<input type="hidden" name="cid" value="' + esc(c.id) + '">' +
+      '<label>Plat nomor *</label>' +
+      '<input type="text" name="plat" required placeholder="cth: B 1234 ABC" style="text-transform:uppercase">' +
+      '<label>Merk / tipe motor *</label>' +
+      '<input type="text" name="merk" required placeholder="cth: Honda Beat / Yamaha NMAX">' +
+      '<label>Tahun</label>' +
+      '<input type="number" name="tahun" inputmode="numeric" placeholder="cth: 2021" min="1970" max="2100">' +
+      '<div class="actions">' +
+        '<button type="button" class="btn gray" data-action="close-modal">Batal</button>' +
+        '<button type="submit" class="btn">Simpan</button>' +
+      '</div>' +
+    '</form>'
+  );
+}
+
+/* ================= FORM: SERVIS ================= */
+function vehicleOptions(selectedId){
+  var html = '<option value="">— Pilih kendaraan —</option>';
+  db.customers.forEach(function(c){
+    if(!c.vehicles.length) return;
+    html += '<optgroup label="' + esc(c.nama) + (c.hp ? ' (' + esc(c.hp) + ')' : '') + '">';
+    c.vehicles.forEach(function(v){
+      html += '<option value="' + v.id + '"' + (v.id === selectedId ? ' selected' : '') + '>' +
+        esc(v.plat) + ' — ' + esc(v.merk) + '</option>';
+    });
+    html += '</optgroup>';
+  });
+  return html;
+}
+
+function openJobForm(existing, presetVid){
+  var j = existing || {
+    id: '', vehicleId: presetVid || '', tanggal: todayISO(), keluhan: '', pekerjaan: '',
+    sparepart: '', biayaSparepart: '', biayaJasa: '', km: '', catatanBerikut: '',
+    status: 'Menunggu', tanggalSelesai: '', lunas: false, paidAt: ''
+  };
+  var hasVehicle = db.customers.some(function(c){ return c.vehicles.length > 0; });
+  openModal(
+    '<h2>' + (existing ? 'Ubah Servis' : 'Servis Baru') + '</h2>' +
+    '<p class="sub">Catat keluhan, pekerjaan, dan biaya. Total terhitung otomatis.</p>' +
+    (hasVehicle ? '' : '<div class="empty">Belum ada kendaraan. Tambah pelanggan dan motornya dulu di menu <b>Pelanggan</b>.</div>') +
+    '<form id="jobForm">' +
+      '<input type="hidden" name="id" value="' + esc(j.id) + '">' +
+      '<label>Kendaraan *</label>' +
+      '<select name="vehicleId" required>' + vehicleOptions(j.vehicleId) + '</select>' +
+      '<label>Tanggal masuk</label>' +
+      '<input type="date" name="tanggal" value="' + esc(j.tanggal) + '">' +
+      '<label>Keluhan pelanggan *</label>' +
+      '<textarea name="keluhan" required placeholder="cth: Motor susah distarter, suara kasar">' + esc(j.keluhan) + '</textarea>' +
+      '<label>Pekerjaan yang dilakukan</label>' +
+      '<textarea name="pekerjaan" placeholder="cth: Ganti busi, bersihkan karburator, ganti oli">' + esc(j.pekerjaan) + '</textarea>' +
+      '<label>Sparepart yang dipakai</label>' +
+      '<textarea name="sparepart" placeholder="cth: Busi NGK, Oli MPX 0.8L">' + esc(j.sparepart) + '</textarea>' +
+      '<label>Biaya sparepart (Rp)</label>' +
+      '<input type="number" name="biayaSparepart" class="biaya" inputmode="numeric" min="0" placeholder="0" value="' + esc(j.biayaSparepart) + '">' +
+      '<label>Biaya jasa (Rp)</label>' +
+      '<input type="number" name="biayaJasa" class="biaya" inputmode="numeric" min="0" placeholder="0" value="' + esc(j.biayaJasa) + '">' +
+      '<div class="total-box"><span>Total biaya</span><b id="totalPreview">Rp 0</b></div>' +
+      '<label>KM kendaraan</label>' +
+      '<input type="number" name="km" inputmode="numeric" min="0" placeholder="cth: 45200" value="' + esc(j.km) + '">' +
+      '<label>Catatan servis berikutnya</label>' +
+      '<input type="text" name="catatanBerikut" placeholder="cth: Ganti oli lagi 2.000 km / 2 bulan lagi" value="' + esc(j.catatanBerikut) + '">' +
+      '<label>Status pekerjaan</label>' +
+      '<select name="status">' + STATUS.map(function(s){
+        return '<option value="' + s + '"' + (s === j.status ? ' selected' : '') + '>' + s + '</option>';
+      }).join('') + '</select>' +
+      '<label class="checkline"><input type="checkbox" name="lunas"' + (j.lunas ? ' checked' : '') + '> Sudah lunas / dibayar</label>' +
+      '<div class="actions">' +
+        '<button type="button" class="btn gray" data-action="close-modal">Batal</button>' +
+        '<button type="submit" class="btn">Simpan Servis</button>' +
+      '</div>' +
+    '</form>'
+  );
+  updateTotalPreview();
+}
+
+function updateTotalPreview(){
+  var sp = document.querySelector('#jobForm input[name=biayaSparepart]');
+  var js = document.querySelector('#jobForm input[name=biayaJasa]');
+  var el = document.getElementById('totalPreview');
+  if(sp && js && el){
+    el.textContent = fmtRp((Number(sp.value)||0) + (Number(js.value)||0));
+  }
+}
+
+/* ================= NOTA ================= */
+function notaText(j){
+  var found = findVehicle(j.vehicleId);
+  var nama = found ? found.customer.nama : '—';
+  var hp = found ? found.customer.hp : '';
+  var plat = found ? found.vehicle.plat : '(kendaraan dihapus)';
+  var merk = found ? found.vehicle.merk + (found.vehicle.tahun ? ' (' + found.vehicle.tahun + ')' : '') : '';
+  var lines = [];
+  lines.push('NOTA SERVIS — BENGKEL MOTOR');
+  lines.push('Tanggal: ' + fmtTgl(j.tanggal));
+  if(j.tanggalSelesai) lines.push('Selesai: ' + fmtTgl(j.tanggalSelesai));
+  lines.push('------------------------------');
+  lines.push('Pelanggan: ' + nama + (hp ? ' (' + hp + ')' : ''));
+  lines.push('Kendaraan: ' + plat + (merk ? ' — ' + merk : ''));
+  if(j.km) lines.push('KM: ' + Number(j.km).toLocaleString('id-ID'));
+  lines.push('------------------------------');
+  lines.push('Keluhan: ' + (j.keluhan || '-'));
+  if(j.pekerjaan) lines.push('Pekerjaan: ' + j.pekerjaan);
+  if(j.sparepart) lines.push('Sparepart: ' + j.sparepart);
+  lines.push('------------------------------');
+  lines.push('Biaya sparepart: ' + fmtRp(j.biayaSparepart));
+  lines.push('Biaya jasa: ' + fmtRp(j.biayaJasa));
+  lines.push('TOTAL: ' + fmtRp(jobTotal(j)));
+  lines.push('Status bayar: ' + (j.lunas ? 'LUNAS' : 'BELUM LUNAS'));
+  if(j.catatanBerikut) lines.push('Servis berikutnya: ' + j.catatanBerikut);
+  lines.push('------------------------------');
+  lines.push('Terima kasih atas kepercayaan Anda.');
+  return lines.join('\n');
+}
+
+function openNota(jobId){
+  var j = findJob(jobId);
+  if(!j) return;
+  var found = findVehicle(j.vehicleId);
+  var hp = found ? found.customer.hp : '';
+  var wa = waNumber(hp);
+  var text = notaText(j);
+  openModal(
+    '<h2>Nota Servis</h2>' +
+    '<p class="sub">Tunjukkan atau kirim nota ini ke pelanggan.</p>' +
+    '<div class="nota">' +
+      '<div class="stamp' + (j.lunas ? '' : ' unpaid') + '">' + (j.lunas ? 'LUNAS' : 'BELUM LUNAS') + '</div>' +
+      '<h3>NOTA SERVIS</h3>' +
+      '<div class="nsub">Bengkel Motor • ' + esc(fmtTgl(j.tanggal)) + '</div>' +
+      '<pre>' + esc(text).replace(/^NOTA SERVIS — BENGKEL MOTOR\nTanggal: .*\n(Selesai: .*\n)?-+\n/, '') + '</pre>' +
+    '</div>' +
+    '<div class="btn-row">' +
+      (wa
+        ? '<a class="btn green" target="_blank" rel="noopener" href="https://wa.me/' + wa + '?text=' + encodeURIComponent(text) + '">💬 Kirim via WhatsApp</a>'
+        : '<button class="btn green" data-action="wa-nohp">💬 Kirim via WhatsApp</button>') +
+      '<button class="btn" data-action="copy-nota" data-id="' + j.id + '">📋 Salin Teks</button>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn ghost block" data-action="close-modal">Tutup</button></div>'
+  );
+}
+
+/* ================= AKSI ================= */
+function setView(v){
+  view = v;
+  document.querySelectorAll('.view').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('nav.bottom button').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-view') === v);
+  });
+  window.scrollTo({top: 0});
+}
+
+function advanceStatus(j){
+  var idx = STATUS.indexOf(j.status);
+  if(idx < 0 || idx >= STATUS.length - 1) return;
+  j.status = STATUS[idx + 1];
+  if(j.status === 'Selesai' && !j.tanggalSelesai) j.tanggalSelesai = todayISO();
+  save(); renderAll();
+}
+
+function toggleLunas(j){
+  j.lunas = !j.lunas;
+  if(j.lunas && !j.paidAt) j.paidAt = todayISO();
+  if(!j.lunas) j.paidAt = '';
+  save(); renderAll();
+}
+
+document.addEventListener('click', function(e){
+  var el = e.target.closest('[data-action]');
+  if(!el) return;
+  var action = el.getAttribute('data-action');
+  var id = el.getAttribute('data-id');
+
+  if(action === 'overlay-close' && e.target === el){ closeModal(); return; }
+  if(action === 'close-modal'){ closeModal(); return; }
+  if(action === 'nav'){ setView(el.getAttribute('data-view')); return; }
+
+  if(action === 'add-job'){ openJobForm(null, el.getAttribute('data-vid') || ''); return; }
+  if(action === 'add-customer'){ openCustomerForm(null); return; }
+  if(action === 'add-vehicle'){ openVehicleForm(el.getAttribute('data-cid')); return; }
+
+  if(action === 'edit-customer'){ var c = findCustomer(id); if(c) openCustomerForm(c); return; }
+  if(action === 'edit-job'){ var j = findJob(id); if(j) openJobForm(j); return; }
+
+  if(action === 'status-next'){ var j2 = findJob(id); if(j2) advanceStatus(j2); return; }
+  if(action === 'toggle-lunas'){ var j3 = findJob(id); if(j3) toggleLunas(j3); return; }
+  if(action === 'nota'){ openNota(id); return; }
+
+  if(action === 'wa-nohp'){ alert('Nomor HP pelanggan belum diisi. Isi dulu nomor HP-nya di menu Pelanggan.'); return; }
+  if(action === 'copy-nota'){
+    var j4 = findJob(id);
+    if(!j4) return;
+    var txt = notaText(j4);
+    function done(){ el.textContent = '✓ Tersalin!'; setTimeout(function(){ el.textContent = '📋 Salin Teks'; }, 1500); }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done).catch(function(){ fallbackCopy(txt); done(); });
+    } else { fallbackCopy(txt); done(); }
+    return;
+  }
+  function fallbackCopy(t){
+    var ta = document.createElement('textarea');
+    ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); }catch(err){}
+    document.body.removeChild(ta);
+  }
+
+  if(action === 'confirm-no'){ confirmCb = null; closeModal(); return; }
+  if(action === 'confirm-yes'){ var cb = confirmCb; confirmCb = null; closeModal(); if(cb) cb(); return; }
+
+  if(action === 'del-job'){
+    var j5 = findJob(id);
+    if(!j5) return;
+    var f5 = findVehicle(j5.vehicleId);
+    openConfirm('Servis ' + (f5 ? f5.vehicle.plat : '') + ' (' + fmtRp(jobTotal(j5)) + ') akan dihapus permanen.', function(){
+      db.jobs = db.jobs.filter(function(x){ return x.id !== id; });
+      save(); renderAll();
+    });
+    return;
+  }
+  if(action === 'del-vehicle'){
+    var cid = el.getAttribute('data-cid'), vid = el.getAttribute('data-vid');
+    var f6 = findVehicle(vid);
+    if(!f6) return;
+    var nJobs = db.jobs.filter(function(x){ return x.vehicleId === vid; }).length;
+    openConfirm('Motor ' + f6.vehicle.plat + ' akan dihapus' + (nJobs ? ' beserta ' + nJobs + ' riwayat servisnya' : '') + '.', function(){
+      var c6 = findCustomer(cid);
+      if(c6) c6.vehicles = c6.vehicles.filter(function(v){ return v.id !== vid; });
+      db.jobs = db.jobs.filter(function(x){ return x.vehicleId !== vid; });
+      save(); renderAll();
+    });
+    return;
+  }
+  if(action === 'del-customer'){
+    var c7 = findCustomer(id);
+    if(!c7) return;
+    var vids = c7.vehicles.map(function(v){ return v.id; });
+    var nJ = db.jobs.filter(function(x){ return vids.indexOf(x.vehicleId) !== -1; }).length;
+    openConfirm('Pelanggan ' + c7.nama + ' beserta ' + c7.vehicles.length + ' kendaraan' +
+      (nJ ? ' dan ' + nJ + ' riwayat servis' : '') + ' akan dihapus permanen.', function(){
+      db.customers = db.customers.filter(function(x){ return x.id !== id; });
+      db.jobs = db.jobs.filter(function(x){ return vids.indexOf(x.vehicleId) === -1; });
+      save(); renderAll();
+    });
+    return;
+  }
+});
+
+/* ================= SUBMIT FORM ================= */
+document.addEventListener('submit', function(e){
+  e.preventDefault();
+  var form = e.target;
+  var fd = new FormData(form);
+
+  if(form.id === 'customerForm'){
+    var cid = fd.get('id');
+    var nama = String(fd.get('nama') || '').trim();
+    var hp = String(fd.get('hp') || '').trim();
+    if(!nama) return;
+    if(cid){
+      var c = findCustomer(cid);
+      if(c){ c.nama = nama; c.hp = hp; }
+    } else {
+      db.customers.push({ id: uid(), nama: nama, hp: hp, vehicles: [] });
+    }
+    save(); closeModal(); renderAll(); setView('customers');
+    return;
+  }
+
+  if(form.id === 'vehicleForm'){
+    var pcid = fd.get('cid');
+    var plat = String(fd.get('plat') || '').trim().toUpperCase();
+    var merk = String(fd.get('merk') || '').trim();
+    var tahun = String(fd.get('tahun') || '').trim();
+    if(!plat || !merk) return;
+    var pc = findCustomer(pcid);
+    if(!pc) return;
+    var dupe = pc.vehicles.some(function(v){ return v.plat.toUpperCase() === plat; });
+    if(dupe){ alert('Plat nomor ' + plat + ' sudah terdaftar untuk pelanggan ini.'); return; }
+    pc.vehicles.push({ id: uid(), plat: plat, merk: merk, tahun: tahun });
+    save(); closeModal(); renderAll();
+    return;
+  }
+
+  if(form.id === 'jobForm'){
+    var jid = fd.get('id');
+    var vehicleId = fd.get('vehicleId');
+    if(!vehicleId){ alert('Pilih dulu kendaraannya.'); return; }
+    var keluhan = String(fd.get('keluhan') || '').trim();
+    if(!keluhan){ alert('Isi dulu keluhan pelanggannya.'); return; }
+    var status = fd.get('status') || 'Menunggu';
+    var lunas = !!form.querySelector('input[name=lunas]').checked;
+    var data = {
+      vehicleId: vehicleId,
+      tanggal: fd.get('tanggal') || todayISO(),
+      keluhan: keluhan,
+      pekerjaan: String(fd.get('pekerjaan') || '').trim(),
+      sparepart: String(fd.get('sparepart') || '').trim(),
+      biayaSparepart: Number(fd.get('biayaSparepart')) || 0,
+      biayaJasa: Number(fd.get('biayaJasa')) || 0,
+      km: String(fd.get('km') || '').trim(),
+      catatanBerikut: String(fd.get('catatanBerikut') || '').trim(),
+      status: status,
+      lunas: lunas
+    };
+    if(jid){
+      var j = findJob(jid);
+      if(!j) return;
+      Object.assign(j, data);
+      if(j.status === 'Selesai' && !j.tanggalSelesai) j.tanggalSelesai = todayISO();
+      if(j.lunas && !j.paidAt) j.paidAt = todayISO();
+      if(!j.lunas) j.paidAt = '';
+    } else {
+      data.id = uid();
+      data.tanggalSelesai = status === 'Selesai' ? todayISO() : '';
+      data.paidAt = lunas ? todayISO() : '';
+      db.jobs.push(data);
+    }
+    save(); closeModal(); renderAll(); setView('home');
+    return;
+  }
+});
+
+/* ================= INPUT LAIN ================= */
+document.addEventListener('input', function(e){
+  if(e.target && e.target.id === 'searchInput'){
+    searchQ = e.target.value;
+    renderHome();
+  }
+  if(e.target && e.target.classList && e.target.classList.contains('biaya')){
+    updateTotalPreview();
+  }
+});
+
+/* ================= MULAI ================= */
+document.getElementById('todayLine').textContent =
+  new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+renderAll();
+</script>
+</body>
+</html>
