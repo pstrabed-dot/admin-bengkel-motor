@@ -1,0 +1,33 @@
+name: Parallel Runner Check
+
+on:
+  workflow_dispatch:
+
+jobs:
+  shard:
+    name: Shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - name: Show runner specs
+        run: |
+          echo "===== shard ${{ matrix.shard }} ====="
+          grep -m 1 "model name" /proc/cpuinfo || true
+          nproc
+          free -h
+      - name: Python sha256 benchmark (about 10 seconds)
+        run: |
+          python3 - <<'PYEOF'
+          import hashlib, time
+          data = b"claude-parallel-check" * 64
+          ops = 0
+          start = time.time()
+          while time.time() - start < 10.0:
+              for _ in range(500):
+                  data = hashlib.sha256(data).digest()
+                  ops += 1
+          elapsed = time.time() - start
+          print(f"BENCHMARK_RESULT sha256_ops={ops} elapsed_s={elapsed:.2f} ops_per_s={ops/elapsed:,.0f}")
+          PYEOF
